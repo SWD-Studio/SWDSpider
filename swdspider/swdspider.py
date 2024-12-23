@@ -2,7 +2,7 @@ from bs4 import BeautifulSoup
 from os import system,chdir
 import json
 import urllib
-from importlib import import_module
+from importlib import import_module, reload
 import sys
 from os.path import abspath
 
@@ -10,7 +10,7 @@ sys.stderr = sys.stdout
 
 
 def main():
-    print('swdspider v0.1.0 Dec 4 2024')
+    print('swdspider v0.1.1 Dec 22 2024')
     src = {}
     src['items'] = '''\
 # Define here the models for your items
@@ -77,9 +77,13 @@ def process_response(response, soup:BeautifulSoup):
         json.dump(cfg, cfgfp)
     
     def crawl(t):
+        for i in list(sys.modules.keys()):
+            if i.startswith(proj):
+                del sys.modules[i]
         settings = import_module(name='.settings',package=proj)
         sp = import_module(name=f'.spiders.{t}',package=proj)
-    
+        
+        
         def getrequest(url):
             headers = {'User-Agent':settings.DEFAULT_USER_AGENT}
             return urllib.request.Request(url, headers=headers)
@@ -164,6 +168,5 @@ def process_response(response, soup:BeautifulSoup):
     system('del swdspider.cfg /q')
     with open('swdspider.cfg', 'w') as fp:
         json.dump(cfg, fp)
-    input()
 if __name__ == '__main__':
     main()
